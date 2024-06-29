@@ -1,0 +1,52 @@
+ import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report
+spam_df = pd.read_csv("/content/mail_data.csv")
+
+spam_df.sample(5)
+
+#counting the number of missing values
+
+spam_df.isna().sum()
+
+spam_df['Category'].unique()
+import seaborn as sns
+
+sns.countplot('Category',data = spam_df)
+
+spam_df.groupby('Category').describe()
+spam_df['spam'] = spam_df['Category'].apply(lambda x: 1 if x== 'spam' else 0)
+spam_df
+x_train, x_test, y_train, y_test = train_test_split(spam_df.Category, spam_df.spam)
+# to seperate data we can use this as well
+# X = spam_df['Message']
+# Y = spam_df['Category']
+# X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=3)
+
+x_train.describe()
+cv = CountVectorizer()
+x_train_count = cv.fit_transform(x_train.values)
+# we could have also used tfidVectorizer it dose the same work
+x_train_count.toarray()
+model = MultinomialNB() # instead of multinomialNB we can use logistic regression as well
+model.fit(x_train_count, y_train)
+
+#making prediction of ham
+email_ham = ['hey wanna meet up for the game']
+email_ham = ['hey, do you have a moment to talk?']
+email_ham_count = cv.transform(email_ham)
+model.predict(email_ham_count)
+#making prediction of spam
+email_spam = ["reward money click"]
+email_spam = ["click here to win a million dollars"]
+email_spam_count = cv.transform(email_spam)
+model.predict(email_spam_count)
+# to give the final accuracy score
+x_test_count = cv.transform(x_test)
+model.score(x_test_count, y_test)
+# Calculate accuracy
+#accuracy = accuracy_score(y_test, y_pred)
+#print(f"Accuracy: {accuracy * 100:.2f}%")
